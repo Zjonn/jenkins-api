@@ -1,7 +1,7 @@
 import typing
 
 from .artifacts import Artifacts
-from .json_requests import get
+from .jenkins_requests import get_node
 
 
 class Build:
@@ -30,13 +30,11 @@ class Build:
         if self._artifacts:
             return self._artifacts
 
-        params = {"tree": "artifacts[relativePath]"}
-
-        resp = get(self.url, params=params)["artifacts"]
+        resp = get_node(self.url, "artifacts", subnodes="relativePath")
         relative_paths = list(map(lambda r_path: r_path["relativePath"], resp))
 
         desc = {
-            "url": super().__getattribute__("url"),
+            "url": self.url,
             "relative_paths": relative_paths,
         }
 
@@ -44,7 +42,10 @@ class Build:
 
     @property
     def description(self):
-        return self._description
+        if self._description:
+            return self._description
+
+
 
     def __str__(self):
         return self.number + " " + self.result
