@@ -30,22 +30,17 @@ class Build:
         if self._artifacts:
             return self._artifacts
 
-        resp = get_node(self.url, "artifacts", subnodes="relativePath")
-        relative_paths = list(map(lambda r_path: r_path["relativePath"], resp))
-
-        desc = {
-            "url": self.url,
-            "relative_paths": relative_paths,
-        }
-
+        desc = {"url": self.url}
         self._artifacts = Artifacts(desc)
+        return self._artifacts
 
     @property
     def description(self):
         if self._description:
             return self._description
 
-
+        self._description = get_node(self.url, 'description')
+        return self._description
 
     def __str__(self):
         return self.number + " " + self.result
