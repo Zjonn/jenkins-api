@@ -6,38 +6,45 @@ from .json_requests import get
 
 class Build:
     def __init__(self, desc: typing.Union[typing.Dict]):
-        self.url = desc['url']
-        self.number = str(desc['number'])
-        self.result = desc['result']
+        self._url = desc["url"]
+        self._number = str(desc["number"])
+        self._result = desc["result"]
 
-        self.artifacts = None
-        self.description = None
+        self._artifacts = None
+        self._description = None
 
-    def __getattribute__(self, name):
-        item = super().__getattribute__(name)
+    @property
+    def url(self):
+        return self._url
 
-        if item:
-            return item
+    @property
+    def number(self):
+        return self._number
 
-        if name == 'artifacts':
-            params = {'tree': name + '[relativePath]'}
+    @property
+    def result(self):
+        return self._result
 
-            resp = get(self.url, params=params)[name]
-            relative_paths = list(
-                map(lambda r_path: r_path['relativePath'], resp))
+    @property
+    def artifacts(self):
+        if self._artifacts:
+            return self._artifacts
 
-            desc = {
-                'url': super().__getattribute__('url'),
-                'relative_paths': relative_paths
-            }
+        params = {"tree": "artifacts[relativePath]"}
 
-            item = Artifacts(desc)
-        else:
-            params = {'tree': name}
-            resp = get(self.url, params=params)[name]
-            item = resp
-        super().__setattr__(name, resp)
-        return item
+        resp = get(self.url, params=params)["artifacts"]
+        relative_paths = list(map(lambda r_path: r_path["relativePath"], resp))
+
+        desc = {
+            "url": super().__getattribute__("url"),
+            "relative_paths": relative_paths,
+        }
+
+        self._artifacts = Artifacts(desc)
+
+    @property
+    def description(self):
+        return self._description
 
     def __str__(self):
-        return self.number + ' ' + self.result
+        return self.number + " " + self.result
